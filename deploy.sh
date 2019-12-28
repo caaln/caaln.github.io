@@ -1,0 +1,23 @@
+#!/bin/bash
+
+set -e
+
+# build
+echo Linting..
+npm run build
+
+# navigate into the build output directory
+cd dist
+
+# if you are deploying to a custom domain
+# echo 'example.com' > CNAME
+
+echo Deploying..
+git init
+git add -A
+git commit -m 'deploy'
+
+# deploy
+git push -f https://github.com/caaln/caaln.github.io.git master
+
+cd ..
