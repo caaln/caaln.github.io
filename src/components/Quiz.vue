@@ -30,6 +30,7 @@
       <div style="font-size: 2em; font-weight: bold;">{{ question.question }}</div>
       <Map v-if="question.type === 'latlng'" v-model="answer" />
       <input v-else-if="question.type === 'text' || setMode" type="text" v-model="answer" />
+      <input v-else-if="question.type === 'number'" type="number" v-model="answer" />
     </div>
   </div>
 </template>
