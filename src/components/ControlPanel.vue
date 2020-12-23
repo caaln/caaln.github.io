@@ -81,7 +81,7 @@ export default {
 
     firebaseInit().database().ref('answer')
       .on('value', (d) => {
-        this.answers = d.val();
+        this.answers = d.val() || {};
       });
 
     firebaseInit().database().ref('min_question')
