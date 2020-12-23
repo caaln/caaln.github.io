@@ -17,7 +17,7 @@
       </div>
 
       <button id="submit" class="btn btn-primary float-right"
-              v-if="answer !== undefined"
+              v-if="answer !== undefined && answer !== ''"
               :disabled="submitting"
               @click="submitAnswer">Submit</button>
       <h2 id="number" class="m-0">Question {{ number }}</h2>
@@ -29,8 +29,8 @@
     <div v-else-if="question" class="answer">
       <div style="font-size: 2em; font-weight: bold;">{{ question.question }}</div>
       <Map v-if="question.type === 'latlng'" v-model="answer" />
-      <input v-else-if="question.type === 'text' || setMode" type="text" v-model="answer" />
-      <input v-else-if="question.type === 'number'" type="number" v-model="answer" />
+      <input v-else-if="question.type === 'text'" ref="input" type="text" v-model="answer" />
+      <input v-else-if="question.type === 'number'" ref="input" type="number" v-model="answer" />
     </div>
   </div>
 </template>
@@ -101,7 +101,10 @@ export default {
   methods: {
     submitAnswer() {
       if (this.submitting) {
-        return;
+        return false;
+      }
+      if (!this.$refs.input.checkValidity()) {
+        return false;
       }
       this.submitting = true;
 
@@ -126,6 +129,8 @@ export default {
             this.submitting = false;
           });
       }
+
+      return true;
     },
   },
 };

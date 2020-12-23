@@ -76,7 +76,7 @@ export default {
 
     firebaseInit().database().ref('user')
       .on('value', (d) => {
-        this.users = Object.fromEntries(Object.entries(d.val()).filter(([, v]) => !v.name.startsWith('kirstyisadum')));
+        this.users = Object.fromEntries(Object.entries(d.val() || {}).filter(([, v]) => !v.name.startsWith('kirstyisadum')));
       });
 
     firebaseInit().database().ref('answer')
