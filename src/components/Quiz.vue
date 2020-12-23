@@ -17,24 +17,34 @@
       </div>
 
       <button id="submit" class="btn btn-primary float-right"
-              v-if="ansLat !== undefined && ansLng !== undefined"
+              v-if="answer !== undefined"
               :disabled="submitting"
               @click="submitAnswer">Submit</button>
       <h2 id="number" class="m-0">Question {{ number }}</h2>
     </div>
-    <div id="map" ref="map" class="flex-grow-1 w-100 h-100"></div>
+
+    <div v-if="number < fbMinQuestion || number > fbMaxQuestion">
+      This question is not open, please wait.
+    </div>
+    <div v-else-if="question" class="answer">
+      <div style="font-size: 2em; font-weight: bold;">{{ question.question }}</div>
+      <Map v-if="question.type === 'latlng'" v-model="answer" />
+      <input v-else-if="question.type === 'text' || setMode" type="text" v-model="answer" />
+    </div>
   </div>
 </template>
 
 <script>
 import firebase from 'firebase/app';
-
-import gmapsInit from '@/utils/gmaps';
 import firebaseInit from '@/utils/firebase';
+import Map from './Map.vue';
 
 /* eslint-disable no-new */
 export default {
-  name: 'quiz',
+  name: 'Quiz',
+  components: {
+    Map,
+  },
   props: {
     uid: {
       type: String,
@@ -51,9 +61,9 @@ export default {
       questions: [],
       answers: [],
       number: 0,
-      ansLat: undefined,
-      ansLng: undefined,
-      marker: undefined,
+      answer: null,
+      fbMinQuestion: -1,
+      fbMaxQuestion: -1,
     };
   },
   async mounted() {
@@ -72,50 +82,20 @@ export default {
         }
       });
 
-    const google = await gmapsInit();
-    const map = new google.maps.Map(this.$refs.map, {
-      center: { lat: 53.3502709, lng: -0.6932712 },
-      zoom: 2,
-      disableDefaultUI: true,
-      zoomControl: true,
-      mapTypeControl: false,
-      scaleControl: false,
-      streetViewControl: false,
-      rotateControl: false,
-      fullscreenControl: false,
-      styles: this.setMode ? [] : [
-        {
-          featureType: 'administrative',
-          stylers: [{ visibility: 'off' }],
-        },
-        {
-          featureType: 'poi',
-          stylers: [{ visibility: 'off' }],
-        },
-        {
-          featureType: 'road',
-          stylers: [{ visibility: 'off' }],
-        },
-        {
-          featureType: 'transit',
-          stylers: [{ visibility: 'off' }],
-        },
-        {
-          featureType: 'water',
-          elementType: 'labels',
-          stylers: [{ visibility: 'off' }],
-        },
-      ],
-    });
+    firebaseInit().database().ref('min_question')
+      .on('value', (d) => {
+        this.fbMinQuestion = d.val() || -1;
+      });
 
-    map.addListener('click', (e) => {
-      this.ansLat = e.latLng.lat();
-      this.ansLng = e.latLng.lng();
-      if (this.marker) {
-        this.marker.setMap(null);
-      }
-      this.marker = new google.maps.Marker({ position: e.latLng, map });
-    });
+    firebaseInit().database().ref('max_question')
+      .on('value', (d) => {
+        this.fbMaxQuestion = d.val() || -1;
+      });
+  },
+  computed: {
+    question() {
+      return this.questions[this.number] !== undefined ? this.questions[this.number] : null;
+    },
   },
   methods: {
     submitAnswer() {
@@ -125,16 +105,12 @@ export default {
       this.submitting = true;
 
       const data = {
-        lat: this.ansLat,
-        lng: this.ansLng,
+        type: 'text',
+        answer: this.answer,
         time: firebase.database.ServerValue.TIMESTAMP,
       };
 
-      this.ansLat = null;
-      this.ansLng = null;
-      if (this.marker) {
-        this.marker.setMap(null);
-      }
+      this.answer = null;
 
       if (this.setMode) {
         firebaseInit().database().ref(`question/${this.number}`).set(data, () => {

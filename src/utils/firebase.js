@@ -7,7 +7,7 @@ let firebaseApp = null;
 export default function firebaseInit() {
   if (firebaseApp === null) {
     const firebaseConfig = {
-      apiKey: 'AIzaSyA4JRB2Bn_kJOcIdbLUQcVBkZZjVC4pMlo',
+      apiKey: 'AIzaSyB-1kDlvIP-LFiyEzgh0pUWVzDDlKMY8iQ',
       authDomain: 'christmas-geography.firebaseapp.com',
       databaseURL: 'https://christmas-geography.firebaseio.com',
       projectId: 'christmas-geography',
