@@ -32,7 +32,13 @@
       <tr>
         <th>#</th>
         <th>Question</th>
-        <th v-for="(u, k) in users" :key="k">{{ u.name || '' }}</th>
+        <th>Answer</th>
+        <template v-for="(u, k) in users">
+          <th :key="`${k}_name`">{{ u.name || '' }}</th>
+          <th :key="`${k}_diff`">Diff</th>
+          <th :key="`${k}_score`">Score</th>
+          <th :key="`${k}_acc`">Acc</th>
+        </template>
       </tr>
       </thead>
       <tbody>
@@ -43,7 +49,15 @@
       >
         <td>{{ n }}</td>
         <td>{{ q.question }}</td>
-        <td v-for="k in Object.keys(users)" :key="k">{{ lastAnswer(k,n) }}</td>
+        <td class="border-left border-right">{{ q.answer }}</td>
+        <template v-for="k in Object.keys(users)">
+          <td :key="`${k}_answer`" class="border-left">{{ lastAnswer(k,n) }}</td>
+          <td :key="`${k}_diff`">{{ diff(k,n) }}</td>
+          <td :key="`${k}_score`">{{ scores[n][k] }}</td>
+          <td :key="`${k}_acc`" class="font-weight-bold border-right">
+            {{ scores.slice(0,n+1).map((s) => s[k]).reduce((a, b) => a + b, 0) }}
+          </td>
+        </template>
       </tr>
       </tbody>
     </table>
@@ -96,6 +110,26 @@ export default {
         this.maxQuestion = this.fbMaxQuestion;
       });
   },
+  computed: {
+    lastAnswers() {
+      return this.questions.map(
+        (q, n) => Object.fromEntries(
+          Object.keys(this.users).map(
+            uKey => [uKey, this.lastAnswer(uKey, n)],
+          ),
+        ),
+      );
+    },
+    scores() {
+      return this.questions.map(
+        (q, n) => Object.fromEntries(
+          Object.keys(this.users).map(
+            uKey => [uKey, this.score(uKey, n)],
+          ),
+        ),
+      );
+    },
+  },
   methods: {
     lastAnswer(uKey, n) {
       if (!this.answers[uKey] || !this.answers[uKey][n]) {
@@ -111,6 +145,36 @@ export default {
         }
       });
       return maxAns.answer;
+    },
+
+    diff(uKey, n) {
+      const trueAnswer = this.questions[n].answer;
+      return (Math.abs(trueAnswer - this.lastAnswers[n][uKey]) / trueAnswer * 100).toFixed(2);
+    },
+
+    score(uKey, n) {
+      const answer = this.lastAnswers[n][uKey];
+      const trueAnswer = this.questions[n].answer;
+
+      const diff = Math.abs(trueAnswer - answer);
+
+      let score = 0;
+      if (trueAnswer === answer) {
+        score += 6;
+      } else if (diff / trueAnswer <= 0.2) {
+        score += 2;
+      } else if (diff / trueAnswer <= 0.35) {
+        score += 1;
+      }
+
+      const closest = Math.min(
+        ...Object.values(this.lastAnswers[n]).map(v => Math.abs(trueAnswer - v)),
+      );
+      if (trueAnswer !== answer && diff <= closest && diff / trueAnswer < 0.5) {
+        score += 3;
+      }
+
+      return score;
     },
 
     setLimits() {

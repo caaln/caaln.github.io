@@ -17,7 +17,7 @@
       </div>
 
       <button id="submit" class="btn btn-primary float-right"
-              v-if="answer !== undefined && answer !== ''"
+              v-if="answer !== undefined && answer !== null && answer !== ''"
               :disabled="submitting"
               @click="submitAnswer">Submit</button>
       <h2 id="number" class="m-0">Question {{ number }}</h2>

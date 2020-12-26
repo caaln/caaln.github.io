@@ -18,6 +18,6 @@ git add -A
 git commit -m 'deploy'
 
 # deploy
-git push -f https://github.com/caaln/caaln.github.io.git master
+git push -f git@github.com:caaln/caaln.github.io.git master
 
 cd ..
