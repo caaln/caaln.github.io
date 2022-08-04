@@ -14,8 +14,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-width: 100dvw;
-            min-height: 100dvh;
+            min-width: 100vw;
+            min-height: 100vh;
             font-size: calc(100px * var(--scale));
         }
 
@@ -36,6 +36,10 @@
         #time {
             font-size: 1rem;
         }
+
+        #debug {
+            font-size: 0.25rem;
+        }
     </style>
 </head>
 <body>
@@ -45,7 +49,21 @@
     <div id="time"></div>
     <div id="date"></div>
 </div>
+<div id="debug"></div>
 <script>
+    if (typeof console  != "undefined")
+        if (typeof console.log != 'undefined')
+            console.olog = console.log;
+        else
+            console.olog = function() {};
+
+    console.log = function(message) {
+        console.olog(message);
+        document.getElementById('debug').textContent = message;
+    };
+    console.error = console.debug = console.info =  console.log
+
+
     dayjs.extend(window.dayjs_plugin_advancedFormat)
 
     let body = document.body;
