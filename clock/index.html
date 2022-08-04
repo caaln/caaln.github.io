@@ -66,6 +66,7 @@
 
     let touchY = null;
     let scale = parseFloat(window.localStorage.getItem('scale') ?? 1);
+    let cur = scale;
     document.documentElement.style.setProperty('--scale', scale);
 
     body.addEventListener('touchstart', function(ev) {
@@ -74,15 +75,16 @@
 
     body.addEventListener('touchmove', function(ev) {
         let diff = touchY - ev.touches[0].screenY;
-        scale = scale + (diff * 0.0001);
-        if(scale < 0.25) {
-            scale = 0.25;
+        cur = scale + (diff * 0.001);
+        if(cur < 0.25) {
+            cur = 0.25;
         }
-        document.documentElement.style.setProperty('--scale', scale);
+        document.documentElement.style.setProperty('--scale', cur);
     });
 
     body.addEventListener('touchend', function() {
-        window.localStorage.setItem('scale', scale);
+        scale = cur;
+        window.localStorage.setItem('scale', cur);
     });
 </script>
 </body>
