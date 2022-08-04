@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.4/dayjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.4/plugin/advancedFormat.js"></script>
+    <style>
+        :root {
+            --scale: 1;
+        }
+
+        html {
+            background-color: hsl(0deg, 0%, 5%);
+            color: hsl(0deg, 0%, 95%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-width: 100dvw;
+            min-height: 100dvh;
+            font-size: calc(100px * var(--scale));
+        }
+
+        #clock {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            width: 5.731982128rem;
+            height: 4.018007079rem;
+            border: 1px solid white;
+            font-size: 0.5rem;
+            font-weight: bold;
+            text-align: center;
+            text-transform: uppercase;
+            font-family: sans-serif;
+        }
+
+        #time {
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+<div id="clock">
+    <div id="dow"></div>
+    <div id="phase"></div>
+    <div id="time"></div>
+    <div id="date"></div>
+</div>
+<script>
+    dayjs.extend(window.dayjs_plugin_advancedFormat)
+
+    let body = document.body;
+    let dow = document.getElementById('dow');
+    let phase = document.getElementById('phase');
+    let time = document.getElementById('time');
+    let date = document.getElementById('date');
+
+    window.setInterval(function () {
+        let now = dayjs();
+        let hour = now.hour();
+        dow.textContent = now.format('dddd');
+        phase.textContent = hour >= 22 ? 'Night' : hour >= 18 ? 'Evening' : hour >= 12 ? 'Afternoon' : hour >= 4 ? 'Morning' : 'Night';
+        time.textContent = now.format('hh:mm A');
+        date.textContent = now.format('Do MMMM YYYY')
+    }, 1000);
+
+
+    let touchY = null;
+    let scale = parseFloat(window.localStorage.getItem('scale') ?? 1);
+    document.documentElement.style.setProperty('--scale', scale);
+
+    body.addEventListener('touchstart', function(ev) {
+        touchY = ev.touches[0].screenY;
+    });
+
+    body.addEventListener('touchmove', function(ev) {
+        let diff = touchY - ev.touches[0].screenY;
+        scale = scale + (diff * 0.0001);
+        if(scale < 0.25) {
+            scale = 0.25;
+        }
+        document.documentElement.style.setProperty('--scale', scale);
+    });
+
+    body.addEventListener('touchend', function() {
+        window.localStorage.setItem('scale', scale);
+    });
+</script>
+</body>
+</html>
